@@ -16,12 +16,17 @@ import Image from "next/image";
 const Home: NextPage = () => {
   const auth = getAuth(app);
   const [name, setName] = useState<User["displayName"]>(null);
-  const [image, setImage] = useState<User["photoURL"]>("/vercel.svg");
+  const [image, setImage] = useState<User["photoURL"]>(null);
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
-      setName(user && user.displayName);
-      setImage(user && user?.photoURL);
+      if (!user) {
+        setName(null);
+        setImage(null);
+        return;
+      }
+      setName(user.displayName);
+      setImage(user.photoURL);
     });
   });
 
@@ -46,29 +51,33 @@ const Home: NextPage = () => {
           Logout
         </button>
       )}
-      <p>{name}</p>
-      <input
-        type="file"
-        accept="image/png, image/jpeg"
-        onChange={(event) => {
-          event.preventDefault();
-          if (!event.target.files) {
-            return;
-          }
-          setImage(window.URL.createObjectURL(event.target.files[0]));
-        }}
-      />
-      {image && (
-        <Image
-          loader={() => {
-            return image;
+      <div>
+        <input
+          type="file"
+          accept="image/png, image/jpeg"
+          onChange={(event) => {
+            event.preventDefault();
+            if (!event.target.files) {
+              return;
+            }
+            setImage(window.URL.createObjectURL(event.target.files[0]));
           }}
-          src={image}
-          alt="image"
-          width={100}
-          height={100}
         />
-      )}
+      </div>
+      <p>{name}</p>
+      <div>
+        {image && (
+          <Image
+            loader={() => {
+              return image;
+            }}
+            src={image}
+            alt="image"
+            width={100}
+            height={100}
+          />
+        )}
+      </div>
     </div>
   );
 };
