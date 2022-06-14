@@ -9,6 +9,7 @@ import {
   signOut,
   User,
 } from "firebase/auth";
+import { getStorage, ref, uploadBytes } from "firebase/storage";
 
 import { app } from "../firebase";
 import Image from "next/image";
@@ -60,7 +61,9 @@ const Home: NextPage = () => {
             if (!event.target.files) {
               return;
             }
-            setImage(window.URL.createObjectURL(event.target.files[0]));
+            const file = event.target.files[0];
+            setImage(window.URL.createObjectURL(file));
+            uploadBytes(ref(getStorage(), "image"), file);
           }}
         />
       </div>
@@ -78,6 +81,13 @@ const Home: NextPage = () => {
           />
         )}
       </div>
+      <button
+        onClick={(event) => {
+          event.preventDefault();
+        }}
+      >
+        Upload
+      </button>
     </div>
   );
 };
