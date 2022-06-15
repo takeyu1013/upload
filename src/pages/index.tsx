@@ -18,6 +18,7 @@ const Home: NextPage = () => {
   const auth = getAuth(app);
   const [name, setName] = useState<User["displayName"]>(null);
   const [image, setImage] = useState<User["photoURL"]>(null);
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
@@ -52,21 +53,6 @@ const Home: NextPage = () => {
           Logout
         </button>
       )}
-      <div>
-        <input
-          type="file"
-          accept="image/png, image/jpeg"
-          onChange={(event) => {
-            event.preventDefault();
-            if (!event.target.files) {
-              return;
-            }
-            const file = event.target.files[0];
-            setImage(window.URL.createObjectURL(file));
-            uploadBytes(ref(getStorage(), "image"), file);
-          }}
-        />
-      </div>
       <p>{name}</p>
       <div>
         {image && (
@@ -81,13 +67,42 @@ const Home: NextPage = () => {
           />
         )}
       </div>
+      <div>
+        <input
+          type="file"
+          accept="image/png, image/jpeg"
+          onChange={(event) => {
+            event.preventDefault();
+            if (!event.target.files) {
+              return;
+            }
+            const file = event.target.files[0];
+            setFile(file);
+          }}
+        />
+      </div>
       <button
         onClick={(event) => {
           event.preventDefault();
+          if (!file) {
+            return;
+          }
+          uploadBytes(ref(getStorage(), "image"), file);
         }}
       >
         Upload
       </button>
+      <div>
+        <Image
+          loader={() => {
+            return file ? URL.createObjectURL(file) : "/no_image.png";
+          }}
+          src="/no_image.png"
+          alt="No Image"
+          width={100}
+          height={100}
+        />
+      </div>
     </div>
   );
 };
