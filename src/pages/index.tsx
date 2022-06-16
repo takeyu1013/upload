@@ -1,18 +1,18 @@
 import type { NextPage } from "next";
+import type { User } from "firebase/auth";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import {
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithRedirect,
   signOut,
-  User,
 } from "firebase/auth";
 import { getStorage, ref, uploadBytes } from "firebase/storage";
 
 import { app } from "../firebase";
-import Image from "next/image";
 
 const Home: NextPage = () => {
   const auth = getAuth(app);
@@ -57,8 +57,8 @@ const Home: NextPage = () => {
       <div>
         {image && (
           <Image
-            loader={() => {
-              return image;
+            loader={({ src }) => {
+              return src;
             }}
             src={image}
             alt="image"
@@ -94,8 +94,8 @@ const Home: NextPage = () => {
       </button>
       <div>
         <Image
-          loader={() => {
-            return file ? URL.createObjectURL(file) : "/no_image.png";
+          loader={({ src }) => {
+            return file ? URL.createObjectURL(file) : src;
           }}
           src="/no_image.png"
           alt="No Image"
