@@ -84,7 +84,7 @@ const Home: NextPage = () => {
           accept="image/png, image/jpeg"
           onChange={(event) => {
             event.preventDefault();
-            const files = event.target.files;
+            const { files } = event.target;
             if (!files) {
               return;
             }
