@@ -10,7 +10,7 @@ import {
   signInWithRedirect,
   signOut,
 } from "firebase/auth";
-import { getStorage, ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 
 import { app } from "../firebase";
 
@@ -19,6 +19,7 @@ const Home: NextPage = () => {
   const [name, setName] = useState<User["displayName"]>(null);
   const [image, setImage] = useState<User["photoURL"]>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [src, setSrc] = useState("");
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
@@ -30,6 +31,16 @@ const Home: NextPage = () => {
       setName(user.displayName);
       setImage(user.photoURL);
     });
+    (async () => {
+      setSrc(
+        await getDownloadURL(
+          ref(
+            getStorage(),
+            `gs://${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}/images/image.jpg`
+          )
+        )
+      );
+    })();
   });
 
   return (
@@ -73,11 +84,11 @@ const Home: NextPage = () => {
           accept="image/png, image/jpeg"
           onChange={(event) => {
             event.preventDefault();
-            if (!event.target.files) {
+            const files = event.target.files;
+            if (!files) {
               return;
             }
-            const file = event.target.files[0];
-            setFile(file);
+            setFile(files[0]);
           }}
         />
       </div>
@@ -87,18 +98,24 @@ const Home: NextPage = () => {
           if (!file) {
             return;
           }
-          uploadBytes(ref(getStorage(), "image"), file);
+          uploadBytes(ref(getStorage(), "images/image.jpg"), file);
         }}
       >
         Upload
       </button>
       <div>
         <Image
-          loader={({ src }) => {
-            return file ? URL.createObjectURL(file) : src;
-          }}
-          src="/no_image.png"
+          src={(file && URL.createObjectURL(file)) || "/no_image.png"}
           alt="No Image"
+          width={100}
+          height={100}
+          unoptimized
+        />
+      </div>
+      <div>
+        <Image
+          src={src || "/no_image.png"}
+          alt="image"
           width={100}
           height={100}
         />
