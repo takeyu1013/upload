@@ -1,5 +1,6 @@
 import type { NextPage } from "next";
-import type { User } from "@supabase/supabase-js";
+import type { Session, User } from "@supabase/supabase-js";
+
 import { useEffect, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import Image from "next/image";
@@ -7,13 +8,30 @@ import Image from "next/image";
 const Home: NextPage = () => {
   const auth = supabase.auth;
   const [email, setEmail] = useState<User["email"]>(undefined);
+  const [image, setImage] = useState<string | undefined>(undefined);
   const [file, setFile] = useState<File | undefined>(undefined);
+  const setStates = (user: Session["user"]) => {
+    if (!user) {
+      return;
+    }
+    setEmail(user.email);
+    const { picture } = user.user_metadata;
+    if (typeof picture !== "string") {
+      return;
+    }
+    setImage(picture);
+  };
 
   useEffect(() => {
     auth.onAuthStateChange((_event, session) => {
-      setEmail(session?.user?.email);
+      if (!session) {
+        setEmail(undefined);
+        setImage(undefined);
+        return;
+      }
+      setStates(session.user);
     });
-    setEmail(auth.user()?.email);
+    setStates(auth.user());
   }, [auth]);
 
   return (
@@ -38,6 +56,9 @@ const Home: NextPage = () => {
         </button>
       )}
       <p>{email}</p>
+      <div>
+        {image && <Image src={image} alt="image" width={100} height={100} />}
+      </div>
       <input
         type="file"
         accept="image/png, image/jpeg"
