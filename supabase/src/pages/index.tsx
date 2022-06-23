@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import type { Session, User } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 
 import { useEffect, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
@@ -10,28 +10,18 @@ const Home: NextPage = () => {
   const [email, setEmail] = useState<User["email"]>(undefined);
   const [image, setImage] = useState<string | undefined>(undefined);
   const [file, setFile] = useState<File | undefined>(undefined);
-  const setStates = (user: Session["user"]) => {
-    if (!user) {
-      return;
-    }
-    setEmail(user.email);
-    const { picture } = user.user_metadata;
-    if (typeof picture !== "string") {
-      return;
-    }
-    setImage(picture);
+  const setStates = (user: User | null | undefined) => {
+    setEmail(user?.email);
+    setImage(user?.user_metadata.picture);
   };
 
   useEffect(() => {
     auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        setEmail(undefined);
-        setImage(undefined);
-        return;
-      }
-      setStates(session.user);
+      const user = session?.user;
+      setStates(user);
     });
-    setStates(auth.user());
+    const user = auth.user();
+    setStates(user);
   }, [auth]);
 
   return (
