@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.118.0",
     "@clerk/nextjs": "^3.6.8",
     "next": "12.1.6",
     "react": "18.2.0",
