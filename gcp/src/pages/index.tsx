@@ -1,7 +1,6 @@
 import type { NextPage } from "next";
 
-import { useEffect, useState } from "react";
-import { Storage, UploadOptions } from "@google-cloud/storage";
+import { useState } from "react";
 
 const Home: NextPage = () => {
   const [file, setFile] = useState<File | undefined>(undefined);
@@ -10,7 +9,7 @@ const Home: NextPage = () => {
     <main>
       <input
         type="file"
-        accept="image/png, image/jpg"
+        accept="image/png, image/jpeg"
         onChange={(event) => {
           const { files } = event.target;
           if (!files) return;
@@ -19,22 +18,16 @@ const Home: NextPage = () => {
       />
       <button
         onClick={async () => {
-          const storage = new Storage({
-            projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
-            keyFilename: "../../login-352313-6280095090fc.json",
+          const fileName = "imgfile2";
+          const res = await fetch(`/api/upload?file=${fileName}`);
+          const { url, fields } = await res.json();
+          if (!file) return;
+          const body = new FormData();
+          Object.entries({ ...fields, file }).forEach(([key, value]) => {
+            body.append(key, value as string | Blob);
           });
-          const bucket = storage.bucket("bucket20220705");
-          if (!file || !file.name) return;
-          const bucketFile = bucket.file(file.name);
-
-          const options = {
-            expires: Date.now() + 1 * 60 * 1000,
-            fields: { "x-goog-meta-test": "data" },
-          };
-          const [response] = await bucketFile.generateSignedPostPolicyV4(
-            options
-          );
-          console.log(response);
+          const upload = await fetch(url, { method: "POST", body });
+          console.log(upload);
         }}
       >
         Upload
