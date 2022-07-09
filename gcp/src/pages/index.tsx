@@ -18,13 +18,14 @@ const Home: NextPage = () => {
       />
       <button
         onClick={async () => {
-          const fileName = "imgfile2";
-          const res = await fetch(`/api/upload?file=${fileName}`);
-          const { url, fields } = await res.json();
           if (!file) return;
+          const res = await fetch(`/api/upload?file=image`);
+          const { url, fields } = await res.json();
+          if (typeof url !== "string") return;
           const body = new FormData();
           Object.entries({ ...fields, file }).forEach(([key, value]) => {
-            body.append(key, value as string | Blob);
+            if (typeof value !== "string" && !(value instanceof Blob)) return;
+            body.append(key, value);
           });
           const upload = await fetch(url, { method: "POST", body });
           console.log(upload);
