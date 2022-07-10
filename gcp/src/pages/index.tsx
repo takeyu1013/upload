@@ -1,6 +1,7 @@
 import type { NextPage } from "next";
 
 import { useState } from "react";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 const Home: NextPage = () => {
   const [file, setFile] = useState<File | undefined>(undefined);
@@ -19,16 +20,33 @@ const Home: NextPage = () => {
       <button
         onClick={async () => {
           if (!file) return;
-          const res = await fetch(`/api/upload?file=image`);
-          const { url, fields } = await res.json();
-          if (typeof url !== "string") return;
-          const body = new FormData();
-          Object.entries({ ...fields, file }).forEach(([key, value]) => {
-            if (typeof value !== "string" && !(value instanceof Blob)) return;
-            body.append(key, value);
+          const accessKeyId = process.env.NEXT_PUBLIC_ACCESS_KEY_ID;
+          const secretAccessKey = process.env.NEXT_PUBLIC_SECRET_ACCESS_KEY;
+          if (!accessKeyId) return;
+          if (!secretAccessKey) return;
+          const client = new S3Client({
+            region: "auto",
+            endpoint: "https://storage.googleapis.com",
+            credentials: {
+              accessKeyId,
+              secretAccessKey,
+            },
           });
-          const upload = await fetch(url, { method: "POST", body });
-          console.log(upload);
+          console.log(process.env.NEXT_PUBLIC_BUCKET_NAME);
+          console.log(process.env.NEXT_PUBLIC_ACCESS_KEY_ID);
+          console.log(process.env.NEXT_PUBLIC_SECRET_ACCESS_KEY);
+
+          const name = encodeURIComponent(file.name);
+          const type = encodeURIComponent(file.type);
+          const output = await client.send(
+            new PutObjectCommand({
+              Bucket: process.env.NEXT_PUBLIC_BUCKET_NAME,
+              Key: name,
+              ContentType: type,
+              Body: file,
+            })
+          );
+          console.log(output);
         }}
       >
         Upload
