@@ -19,7 +19,6 @@ const Home: NextPage = () => {
       />
       <button
         onClick={async () => {
-          if (!file) return;
           const accessKeyId = process.env.NEXT_PUBLIC_ACCESS_KEY_ID;
           const secretAccessKey = process.env.NEXT_PUBLIC_SECRET_ACCESS_KEY;
           if (!accessKeyId) return;
@@ -32,17 +31,13 @@ const Home: NextPage = () => {
               secretAccessKey,
             },
           });
-          console.log(process.env.NEXT_PUBLIC_BUCKET_NAME);
-          console.log(process.env.NEXT_PUBLIC_ACCESS_KEY_ID);
-          console.log(process.env.NEXT_PUBLIC_SECRET_ACCESS_KEY);
-
-          const name = encodeURIComponent(file.name);
-          const type = encodeURIComponent(file.type);
+          if (!file) return;
+          const { name, type } = file;
           const output = await client.send(
             new PutObjectCommand({
               Bucket: process.env.NEXT_PUBLIC_BUCKET_NAME,
-              Key: name,
-              ContentType: type,
+              Key: encodeURIComponent(name),
+              ContentType: encodeURIComponent(type),
               Body: file,
             })
           );
